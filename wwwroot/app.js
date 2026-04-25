@@ -7,6 +7,8 @@ const sampleStationButton = document.getElementById("sampleStationButton");
 const connectionStatus = document.getElementById("connectionStatus");
 const logList = document.getElementById("logList");
 
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4M2ZhYzM4My1lN2NhLTRjNTktODY1OC1jZDdmOTU3Y2ZjMGEiLCJpZCI6MTMwNTAsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI0NzA5NzB9.rRTs6chsWJdo9KNYe5VjJj2fUzMHeniIJvFQOd0aLJU";
+
 const viewer = new Cesium.Viewer("cesiumContainer", {
   animation: false,
   baseLayerPicker: true,
@@ -25,11 +27,13 @@ const hubUrl =
   new URLSearchParams(window.location.search).get("hubUrl") ||
   "/hubs/commands";
 
+  // signalR 客户端和服务端连接
 const connection = new signalR.HubConnectionBuilder()
   .withUrl(hubUrl)
   .withAutomaticReconnect()
   .build();
 
+// 注册响应函数: ReceiveCommand
 connection.on("ReceiveCommand", (command) => {
   appendLog("收到指令", command);
   executeCesiumCommand(command);
@@ -137,6 +141,7 @@ function parseCommand() {
   }
 }
 
+// Cesium客户端，所有响应指令json的都在这里处理
 function executeCesiumCommand(command) {
   switch (command.action) {
     case "createSatellite":
