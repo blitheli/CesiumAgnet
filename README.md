@@ -71,3 +71,58 @@ connection.on("ReceiveCommand", (data) => {
 * Prompt 调优：为大模型编写 System Prompt，使其严格按照你的 JSON 格式输出。
 
 您需要我针对“如何为用户封装一个简单的 Python 类库（SDK）”来调用这个 SignalR 接口提供代码示例吗？
+
+------------------------------
+## 6. 当前项目实现
+
+本仓库已经包含一个最小可运行的 ASP.NET Core + SignalR + Cesium 原型：
+
+* `SatelliteCommandBus.csproj`：ASP.NET Core Web 项目。
+* `Program.cs`：注册 SignalR、CORS、静态文件和健康检查接口。
+* `Hubs/CommandHub.cs`：提供 `JoinSession(sessionId)` 和 `SendCommand(command)`，按 `sessionId` 分组转发 `ReceiveCommand`。
+* `Models/CesiumCommand.cs`：标准 JSON 指令模型，包含 `action`、`params`、`sessionId`。
+* `wwwroot/`：Cesium 网页客户端，支持创建卫星、创建地面站、飞行定位和清空场景。
+* `vercel.json`：用于将 `wwwroot` 作为静态 Cesium 前端部署到 Vercel。
+
+### 本地运行
+
+安装 .NET 8 SDK 后执行：
+
+```bash
+dotnet run
+```
+
+浏览器打开控制台输出的地址，例如 `http://localhost:5000`。网页会默认连接同源 SignalR Hub：`/hubs/commands`。
+
+### 指令示例
+
+```json
+{
+  "action": "createSatellite",
+  "sessionId": "demo",
+  "params": {
+    "id": "SAT-01",
+    "name": "Starlink Demo",
+    "longitude": 116.391,
+    "latitude": 39.907,
+    "altitude": 550000,
+    "color": "#00d4ff"
+  }
+}
+```
+
+### Vercel 部署说明
+
+Vercel 配置会部署 `wwwroot` 静态 Cesium 页面。由于 ASP.NET Core SignalR Hub 需要运行在支持 .NET 的后端环境中，请将后端部署到 ASP.NET Core 主机后，通过以下方式让 Vercel 页面连接后端 Hub：
+
+```text
+https://your-vercel-app.vercel.app/?hubUrl=https://your-dotnet-host.example.com/hubs/commands
+```
+
+也可以在页面加载前设置：
+
+```html
+<script>
+  window.CESIUM_COMMAND_HUB_URL = "https://your-dotnet-host.example.com/hubs/commands";
+</script>
+```
