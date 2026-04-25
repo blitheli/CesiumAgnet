@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cesium 卫星指令总线</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.118.2/Widgets/widgets.min.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="layout">
+    <section id="cesiumContainer" aria-label="Cesium 三维地球"></section>
+
+    <aside class="panel">
+      <header>
+        <p class="eyebrow">Command Bus</p>
+        <h1>Cesium 卫星/地面站可视化</h1>
+        <p>通过 SignalR 接收 Agent 或 Python SDK 发出的标准 JSON 指令，并即时更新 Cesium 场景。</p>
+      </header>
+
+      <section class="connection-card">
+        <label for="sessionId">会话 ID</label>
+        <input id="sessionId" type="text" value="demo" autocomplete="off">
+        <button id="connectButton" type="button">连接 SignalR</button>
+        <span id="connectionStatus" class="status" data-level="warn">未连接</span>
+      </section>
+
+      <section class="command-card">
+        <label for="commandInput">标准 JSON 指令</label>
+        <textarea id="commandInput" rows="10" spellcheck="false">{
+  "action": "createSatellite",
+  "params": {
+    "id": "SAT-01",
+    "name": "Starlink Demo",
+    "longitude": 116.391,
+    "latitude": 39.907,
+    "altitude": 550000,
+    "color": "#00d4ff"
+  }
+}</textarea>
+        <div class="actions">
+          <button id="sendButton" type="button">发送到当前会话</button>
+          <button id="sampleSatelliteButton" type="button">卫星示例</button>
+          <button id="sampleStationButton" type="button">地面站示例</button>
+        </div>
+      </section>
+
+      <section class="help-card">
+        <h2>支持的动作</h2>
+        <ul>
+          <li><code>createSatellite</code>：创建卫星点位</li>
+          <li><code>createGroundStation</code>：创建地面站</li>
+          <li><code>flyTo</code>：飞到经纬度位置</li>
+          <li><code>clearScene</code>：清空当前实体</li>
+        </ul>
+      </section>
+
+      <section class="log-card">
+        <h2>事件日志</h2>
+        <ol id="logList" aria-live="polite"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.118.2/Cesium.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
