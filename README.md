@@ -126,3 +126,9 @@ https://your-vercel-app.vercel.app/?hubUrl=https://your-dotnet-host.example.com/
   window.CESIUM_COMMAND_HUB_URL = "https://your-dotnet-host.example.com/hubs/commands";
 </script>
 ```
+
+还支持在地址栏哈希中指定 Hub（便于分享）：`#hubUrl=https%3A%2F%2Fyour-dotnet-host.example.com%2Fhubs%2Fcommands`
+
+#### 连接失败并提示 proxy / WebSocket？
+
+Vercel 上只有静态文件，**没有** `/hubs/commands` 的 SignalR 服务。浏览器向 `*.vercel.app/hubs/commands` 发起协商时拿不到合法 Hub 响应，SignalR 有时会表现为与 **proxy** 或传输协商相关的中文/英文报错。解决办法不是改 Vercel 的静态配置，而是：**把本仓库的 ASP.NET 应用部署到可运行 .NET 的主机**，再用上文 `hubUrl` 或 `CESIUM_COMMAND_HUB_URL` 指向该主机上的 Hub；并确保后端 CORS 允许你的 Vercel 页面来源（若使用 `appsettings.json` 里的 `Cors:AllowedOrigins`）。

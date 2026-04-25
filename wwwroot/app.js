@@ -7,6 +7,68 @@ const sampleStationButton = document.getElementById("sampleStationButton");
 const connectionStatus = document.getElementById("connectionStatus");
 const logList = document.getElementById("logList");
 
+function getHubUrlFromHash() {
+  const raw = window.location.hash.replace(/^#/, "");
+  if (!raw) {
+    return null;
+  }
+  const qs = raw.startsWith("?") ? raw.slice(1) : raw;
+  if (!qs.includes("=")) {
+    return null;
+  }
+  try {
+    return new URLSearchParams(qs).get("hubUrl");
+  } catch {
+    return null;
+  }
+}
+
+const hubUrl =
+  window.CESIUM_COMMAND_HUB_URL ||
+  new URLSearchParams(window.location.search).get("hubUrl") ||
+  getHubUrlFromHash() ||
+  "/hubs/commands";
+
+function hubSignalRTargetsCurrentOrigin(url) {
+  try {
+    const absolute = /^https?:\/\//i.test(url)
+      ? url
+      : new URL(url, window.location.origin).href;
+    return new URL(absolute).origin === window.location.origin;
+  } catch {
+    return true;
+  }
+}
+
+function isVercelPreviewOrProductionHost() {
+  const host = window.location.hostname;
+  return host === "vercel.app" || host.endsWith(".vercel.app");
+}
+
+function vercelHubHintMessage() {
+  const example = `${window.location.origin}/?hubUrl=https://你的-dotnet-域名/hubs/commands`;
+  return (
+    "当前站点在 Vercel 上仅为静态页面，没有 SignalR 服务；默认连接同源 /hubs/commands 会失败，浏览器或 SignalR 可能提示与 proxy/WebSocket 有关。" +
+    `请把 .NET 后端单独部署后，用查询参数指定 Hub，例如：${example}` +
+    "（后端需在 CORS 中允许本 Vercel 域名。）"
+  );
+}
+
+function maybeShowStaticHostingHubHint() {
+  if (!isVercelPreviewOrProductionHost() || !hubSignalRTargetsCurrentOrigin(hubUrl)) {
+    return;
+  }
+  const panel = document.querySelector(".panel");
+  if (!panel || panel.querySelector(".deploy-hint")) {
+    return;
+  }
+  const box = document.createElement("div");
+  box.className = "deploy-hint";
+  box.setAttribute("role", "status");
+  box.textContent = vercelHubHintMessage();
+  panel.insertBefore(box, panel.firstChild);
+}
+
 Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4M2ZhYzM4My1lN2NhLTRjNTktODY1OC1jZDdmOTU3Y2ZjMGEiLCJpZCI6MTMwNTAsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI0NzA5NzB9.rRTs6chsWJdo9KNYe5VjJj2fUzMHeniIJvFQOd0aLJU";
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
@@ -22,12 +84,8 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 viewer.scene.globe.enableLighting = true;
 viewer.camera.flyHome(0);
 
-const hubUrl =
-  window.CESIUM_COMMAND_HUB_URL ||
-  new URLSearchParams(window.location.search).get("hubUrl") ||
-  "/hubs/commands";
+maybeShowStaticHostingHubHint();
 
-  // signalR 客户端和服务端连接
 const connection = new signalR.HubConnectionBuilder()
   .withUrl(hubUrl)
   .withAutomaticReconnect()
@@ -55,7 +113,11 @@ connectButton.addEventListener("click", async () => {
     await joinCurrentSession();
   } catch (error) {
     setConnectionState("连接失败", "error");
-    appendLog("连接失败", { hubUrl, error: error.message });
+    const payload = { hubUrl, error: error.message };
+    if (isVercelPreviewOrProductionHost() && hubSignalRTargetsCurrentOrigin(hubUrl)) {
+      payload.hint = vercelHubHintMessage();
+    }
+    appendLog("连接失败", payload);
   }
 });
 
