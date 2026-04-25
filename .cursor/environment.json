@@ -1,0 +1,9 @@
+{
+  "$schema": "https://www.cursor.com/schemas/environment.schema.json",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "echo 'Cloud environment prepared with .NET 8 SDK and ASP.NET Core Runtime via Docker build.'",
+  "start": "echo 'Cursor Cloud environment ready'"
+}
