@@ -133,6 +133,7 @@ sendButton.addEventListener("click", async () => {
 sampleSatelliteButton.addEventListener("click", () => {
   commandInput.value = JSON.stringify(
     {
+      target: "entity",
       action: "createSatellite",
       params: {
         id: "SAT-01",
@@ -151,6 +152,7 @@ sampleSatelliteButton.addEventListener("click", () => {
 sampleStationButton.addEventListener("click", () => {
   commandInput.value = JSON.stringify(
     {
+      target: "entity",
       action: "createGroundStation",
       params: {
         id: "GS-01",
@@ -196,6 +198,12 @@ function parseCommand() {
     }
 
     command.params ??= {};
+    const t = command.target;
+    if (typeof t !== "string" || !t.trim()) {
+      command.target = "entity";
+    } else {
+      command.target = t.trim();
+    }
     return command;
   } catch (error) {
     appendLog("指令格式错误", { error: error.message });
@@ -205,6 +213,14 @@ function parseCommand() {
 
 // Cesium客户端，所有响应指令json的都在这里处理
 function executeCesiumCommand(command) {
+  const target =
+    typeof command.target === "string" && command.target.trim()
+      ? command.target.trim()
+      : "entity";
+  if (target !== "entity") {
+    appendLog("未实现的 target", { target, action: command.action });
+    return;
+  }
   switch (command.action) {
     case "createSatellite":
       createSatellite(command.params);

@@ -28,6 +28,7 @@
       <section class="command-card">
         <label for="commandInput">标准 JSON 指令</label>
         <textarea id="commandInput" rows="10" spellcheck="false">{
+  "target": "entity",
   "action": "createSatellite",
   "params": {
     "id": "SAT-01",
@@ -46,6 +47,11 @@
       </section>
 
       <section class="help-card">
+        <h2>指令字段</h2>
+        <ul>
+          <li><code>target</code>：作用对象，默认 <code>entity</code>（Cesium 实体）；可扩展如 <code>vgt</code> 等。</li>
+          <li><code>action</code> + <code>params</code>：具体操作与参数。</li>
+        </ul>
         <h2>支持的动作</h2>
         <ul>
           <li><code>createSatellite</code>：创建卫星点位</li>
