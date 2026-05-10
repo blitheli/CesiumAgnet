@@ -65,11 +65,12 @@
         <h2>事件日志</h2>
         <ol id="logList" aria-live="polite"></ol>
       </section>
+      <button onclick="window.open('sender.html', '_blank')" style="margin-top:1em;">发送测试</button>
     </aside>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.118.2/Cesium.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
-  <script src="/app.js"></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>

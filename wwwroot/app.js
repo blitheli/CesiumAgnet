@@ -92,9 +92,18 @@ const connection = new signalR.HubConnectionBuilder()
   .build();
 
 // 注册响应函数: ReceiveCommand
-connection.on("ReceiveCommand", (command) => {
-  appendLog("收到指令", command);
-  executeCesiumCommand(command);
+connection.on("ReceiveCommand", async (command) => {
+    appendLog("收到指令", command);
+    executeCesiumCommand(command);
+
+    // 回传执行结果（可选）
+    if (command.senderSessionId != null) {
+                const response = {
+            sessionId: command.senderSessionId,
+            status: `指令 ${command.action} 已执行`
+        };
+        await connection.invoke("SendResponse", response);
+    }
 });
 
 connection.onreconnecting(() => setConnectionState("正在重连...", "warn"));
@@ -190,6 +199,8 @@ async function sendCommand(command) {
   appendLog("已发送指令", commandWithSession);
 }
 
+
+
 function parseCommand() {
   try {
     const command = JSON.parse(commandInput.value);
@@ -239,6 +250,7 @@ function executeCesiumCommand(command) {
       break;
   }
 }
+
 
 function createSatellite(params) {
   removeEntityIfExists(params.id);
@@ -380,3 +392,28 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+document.getElementById("sendBtn").onclick = async function () {
+    if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+        appendLog("请先连接 SignalR。");
+        return;
+    }
+    const sessionId = document.getElementById("sessionId").value;
+    const receiverSessionId = document.getElementById("receiverSessionId").value;
+    let command;
+    try {
+        command = JSON.parse(document.getElementById("commandInput").value);
+        command.sessionId = sessionId;
+        command.SenderSessionId = sessionId;
+        command.ReceiverSessionId = receiverSessionId;
+    } catch (e) {
+        appendLog("请输入有效的 JSON 指令！");
+        return;
+    }
+    try {
+        await connection.invoke("SendCommand", command);
+        appendLog("已发送指令: " + JSON.stringify(command));
+    } catch (err) {
+        appendLog("发送指令失败: " + err.toString());
+    }
+};
