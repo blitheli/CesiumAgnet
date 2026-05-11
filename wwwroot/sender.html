@@ -73,11 +73,8 @@
         if (!connection) {
             connection = new signalR.HubConnectionBuilder()
                 .withUrl("/hubs/commands")
+                .withAutomaticReconnect()
                 .build();
-
-            connection.on("ClientResponse", function (message) {
-                appendLog("收到回传: " + message);
-            });
 
             connection.on("ReceiveResponse", function (response) {
                 // 打印 status 字段

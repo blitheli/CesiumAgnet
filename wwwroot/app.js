@@ -98,9 +98,10 @@ connection.on("ReceiveCommand", async (command) => {
 
     // 回传执行结果（可选）
     if (command.senderSessionId != null) {
-                const response = {
+        const response = {
             sessionId: command.senderSessionId,
-            status: `指令 ${command.action} 已执行`
+            status: `指令 ${command.action} 已执行`,
+            params: {}
         };
         await connection.invoke("SendResponse", response);
     }

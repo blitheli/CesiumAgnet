@@ -92,8 +92,9 @@ connection.on("ReceiveCommand", (data) => {
 
 - `SatelliteCommandBus.csproj`：ASP.NET Core Web 项目。
 - `Program.cs`：注册 SignalR、CORS、静态文件和健康检查接口。
-- `Hubs/CommandHub.cs`：提供 `JoinSession(sessionId)` 和 `SendCommand(command)`，按 `sessionId` 分组转发 `ReceiveCommand`。
+- `Hubs/CommandHub.cs`：提供 `JoinSession(sessionId)`、`SendCommand(command)` 与 `SendResponse(response)`，按 `sessionId` 分组转发 `ReceiveCommand` / `ReceiveResponse`。
 - `Models/CesiumCommand.cs`：标准 JSON 指令模型，包含 `action`、`params`、`target`（默认 `entity`）、`sessionId`。
+- `Models/ResponseMessage.cs`：标准回传消息模型，包含 `sessionId`、`status`、`params`（可省略）与可选 `senderSessionId`。
 - `wwwroot/`：Cesium 网页客户端，支持创建卫星、创建地面站、飞行定位和清空场景。
 - `vercel.json`：用于将 `wwwroot` 作为静态 Cesium 前端部署到 Vercel。
 
@@ -124,6 +125,18 @@ dotnet run
   }
 }
 ```
+
+### 回传示例（`SendResponse`）
+
+```json
+{
+  "sessionId": "sender-session",
+  "status": "指令 createSatellite 已执行",
+  "params": {}
+}
+```
+
+说明：接收端可通过 `connection.invoke("SendResponse", response)` 回传，发送端订阅 `ReceiveResponse` 获取执行结果。
 
 ### Vercel 部署说明
 

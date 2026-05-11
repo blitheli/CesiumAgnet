@@ -10,8 +10,8 @@ public sealed record ResponseMessage(
     string SessionId,
     // 状态码，如 "success"、"error" 等
     string Status,
-    // 可选的消息文本，通常用于错误描述或详细信息
-    JsonElement Params,
+    // 可选的消息参数
+    JsonElement Params = default,
     //  可选的发送端Id
     string? SenderSessionId = null
 );
